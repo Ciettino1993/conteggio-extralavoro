@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+.env
+.env.*
+!.env.example
+*.log
+# Dati carburanti: rigenerati ogni giorno da scripts/update-fuel.mjs
+public/data/carburanti/
+.claude/
