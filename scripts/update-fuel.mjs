@@ -21,13 +21,24 @@ async function readMeta() {
   }
 }
 
-async function download(name) {
-  const res = await fetch(BASE + name, {
-    headers: { 'User-Agent': 'SpesaSmart/0.1 (aggiornamento open data carburanti)' },
-    signal: AbortSignal.timeout(120_000),
-  })
-  if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`)
-  return res.text()
+async function download(name, attempts = 3) {
+  for (let i = 1; ; i++) {
+    try {
+      const res = await fetch(BASE + name, {
+        headers: { 'User-Agent': 'SpesaSmart/0.1 (aggiornamento open data carburanti)' },
+        signal: AbortSignal.timeout(120_000),
+      })
+      if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`)
+      return await res.text()
+    } catch (err) {
+      // "fetch failed" nasconde la causa vera (timeout, connessione rifiutata...): la mostriamo.
+      const cause = err.cause ? ` [${err.cause.code ?? ''} ${err.cause.message ?? err.cause}]` : ''
+      const msg = `${name}: ${err.message}${cause}`
+      if (i >= attempts) throw new Error(msg)
+      console.warn(`[carburanti] tentativo ${i} non riuscito (${msg}), riprovo...`)
+      await new Promise((r) => setTimeout(r, 5000 * i))
+    }
+  }
 }
 
 async function main() {
