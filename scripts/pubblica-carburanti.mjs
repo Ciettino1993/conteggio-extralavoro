@@ -4,7 +4,7 @@
 // Serve perché il sito MIMIT non risponde ai server di GitHub (esteri).
 // Il ramo contiene un solo salvataggio, sostituito ogni giorno: il repository non cresce.
 import { execFileSync } from 'node:child_process'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { appendFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
@@ -15,7 +15,16 @@ const FILES = ['anagrafica_impianti_attivi.csv', 'prezzo_alle_8.csv']
 const WORK = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'SpesaSmart', 'carburanti-upload')
 const IDENTITY = { name: 'Ciettino1993', email: '170741288+Ciettino1993@users.noreply.github.com' }
 
-const git = (...args) => execFileSync('git', args, { cwd: WORK, stdio: ['ignore', 'pipe', 'inherit'] }).toString().trim()
+const LOG = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'SpesaSmart', 'carburanti.log')
+
+const git = (...args) => execFileSync('git', args, { cwd: WORK, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim()
+
+/** Scrive a video e nel registro (utile quando lo script parte da solo ogni mattina). */
+async function log(message, isError = false) {
+  ;(isError ? console.error : console.log)(message)
+  await mkdir(path.dirname(LOG), { recursive: true })
+  await appendFile(LOG, `${new Date().toLocaleString('it-IT')}  ${message}\n`).catch(() => {})
+}
 
 async function main() {
   const pkg = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'))
@@ -51,13 +60,15 @@ async function main() {
   git('init', '-q', '-b', 'carburanti')
   git('config', 'user.name', IDENTITY.name)
   git('config', 'user.email', IDENTITY.email)
+  git('config', 'core.autocrlf', 'false') // evita avvisi sui fine riga (i file restano come scaricati)
   git('add', '-A')
   git('commit', '-q', '-m', `Prezzi carburanti MIMIT, estrazione del ${extraction}`)
   git('push', '-q', '--force', repo, 'carburanti:carburanti')
-  console.log(`[carburanti] caricati i dati del ${extraction}: l'app si aggiornerà in pochi minuti.`)
+  await log(`[carburanti] caricati i dati del ${extraction}: l'app si aggiornerà in pochi minuti.`)
 }
 
-main().catch((err) => {
-  console.error(`[carburanti] errore: ${err.message}`)
+main().catch(async (err) => {
+  const detail = err.stderr ? ` ${err.stderr.toString().trim()}` : ''
+  await log(`[carburanti] errore: ${err.message}${detail}`, true)
   process.exitCode = 1
 })
