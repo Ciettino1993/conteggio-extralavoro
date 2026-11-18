@@ -22,6 +22,11 @@ mentre dall'Italia funziona. Per questo:
 
 Se il PC non aggiorna, l'app resta online con gli ultimi prezzi caricati e mostra la data dei dati.
 
+**Aggiornamento automatico:** attività pianificata di Windows «SpesaSmart - prezzi carburanti», ogni giorno
+alle 9:30 (se il PC è spento, alla prima accensione; riprova 2 volte ogni 30 minuti se fallisce).
+Registro: `%LOCALAPPDATA%\SpesaSmart\carburanti.log`. Per disattivarla: Utilità di pianificazione →
+Libreria → «SpesaSmart - prezzi carburanti» → Disabilita.
+
 ## Alternativa: il sito che hai già
 
 Se hai già un sito (es. su Netlify), si può pubblicare SpesaSmart in una sottocartella o in un
