@@ -2,7 +2,7 @@
 // Dati © OpenStreetMap contributors, ODbL. Rispettare le policy d'uso: niente richieste ripetute.
 import { z } from 'zod'
 import { db, isFresh, markFetched, nowIso, type Store } from '../db'
-import type { LatLon } from '../geo'
+import { haversineKm, tilesAround, type LatLon } from '../geo'
 
 const OverpassElement = z.object({
   type: z.enum(['node', 'way', 'relation']),
@@ -24,7 +24,7 @@ export function addressFromTags(t: Record<string, string>) {
 
 /** Server Overpass pubblici: se il principale è sovraccarico si prova il successivo. */
 const OVERPASS_SERVERS = [
-  { url: 'https://overpass-api.de/api/interpreter', timeoutMs: 25_000 },
+  { url: 'https://overpass-api.de/api/interpreter', timeoutMs: 60_000 },
   { url: 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', timeoutMs: 75_000 },
   { url: 'https://overpass.private.coffee/api/interpreter', timeoutMs: 40_000 },
 ]
@@ -48,10 +48,61 @@ async function overpass(query: string): Promise<{ elements?: unknown[] }> {
   throw new Error(`Elenco negozi non disponibile (${lastError}). Riprova più tardi.`)
 }
 
+interface StaticStore {
+  i: string
+  n: string
+  b: string
+  la: number
+  lo: number
+  a: string
+}
+
+/**
+ * Supermercati dai dati preparati in pubblicazione (estratto OpenStreetMap settimanale, public/data/negozi).
+ * Restituisce null se i dati non ci sono (es. in sviluppo): si usa allora Overpass.
+ */
+async function storesFromStaticData(center: LatLon, radiusKm: number): Promise<Store[] | null> {
+  const base = `${import.meta.env.BASE_URL}data/negozi/`
+  let meta: { tiles: string[]; tileDeg: number; generatedAt: string }
+  try {
+    const res = await fetch(`${base}meta.json`)
+    if (!res.ok) return null
+    meta = await res.json()
+  } catch {
+    return null
+  }
+  const available = new Set(meta.tiles)
+  const keys = tilesAround(center, radiusKm, meta.tileDeg).filter((k) => available.has(k))
+  const lists = await Promise.all(
+    keys.map(async (k) => {
+      const res = await fetch(`${base}t_${k}.json`)
+      return res.ok ? ((await res.json()) as StaticStore[]) : []
+    }),
+  )
+  return lists
+    .flat()
+    .filter((s) => haversineKm(center, { lat: s.la, lon: s.lo }) <= radiusKm)
+    .map((s) => ({
+      id: `osm:${s.i}`,
+      name: s.n,
+      brand: s.b,
+      lat: s.la,
+      lon: s.lo,
+      address: s.a,
+      fetchedAt: meta.generatedAt,
+    }))
+}
+
 /** Supermercati entro il raggio, con cache locale di 7 giorni per zona. */
 export async function fetchStoresAround(center: LatLon, radiusKm: number, force = false): Promise<number> {
   const key = `stores:${center.lat.toFixed(3)}:${center.lon.toFixed(3)}:${radiusKm}`
   if (!force && (await isFresh(key, 7 * 86400_000))) return 0
+  const fromStatic = await storesFromStaticData(center, radiusKm)
+  if (fromStatic) {
+    await db.stores.bulkPut(fromStatic)
+    await markFetched(key)
+    return fromStatic.length
+  }
   const r = Math.round(radiusKm * 1000)
   const around = `(around:${r},${center.lat},${center.lon})`
   const query = `[out:json][timeout:25];(nwr["shop"="supermarket"]${around};nwr["shop"="convenience"]["brand"]${around};);out center tags;`
