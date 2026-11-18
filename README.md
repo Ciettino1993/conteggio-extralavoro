@@ -31,7 +31,8 @@ I prezzi carburanti online si aggiornano con **`Aggiorna prezzi carburanti.cmd`*
 | Catalogo prodotti | Ricerca per nome/marca/codice su Open Food Facts; prodotti sconosciuti creati come «da verificare» |
 | Scanner | EAN-8/EAN-13/UPC con fotocamera posteriore, anti-doppia lettura, pausa, inserimento manuale |
 | Sessione di spesa | Prezzo atteso, prezzo a scaffale, quantità, totale stimato, articoli ancora da prendere, chiusura con totale pagato |
-| Supermercati vicini | Da OpenStreetMap entro un raggio (default 5 km), mappa |
+| Supermercati vicini | Tutti i ~20.000 supermercati italiani di OpenStreetMap (estratto Geofabrik aggiornato ogni settimana), entro un raggio (default 5 km), mappa |
+| **Lettura scontrini** | Foto dello scontrino → Claude legge tutte le righe → riconoscimento del negozio e dei prodotti (con memoria degli abbinamenti confermati) → revisione → prezzi salvati in un colpo. Serve una chiave API Anthropic personale (Profilo → Lettura scontrini), che resta sul dispositivo |
 | **Carburante** | **Prezzo medio di benzina e diesel (self o servito) nei distributori entro 10 km**, min/max, elenco e mappa, dati ufficiali MIMIT aggiornati ogni giorno |
 | Confronto | Costo della lista per negozio, copertura, prezzi mancanti/scaduti, piano su 1-3 negozi con costo del carburante (prezzo medio ÷ km/l dell'auto), soglia minima di risparmio per una fermata in più, percorso stradale indicativo |
 | Privacy | Tutto resta sul dispositivo; posizione solo su richiesta; esportazione e cancellazione dati |
