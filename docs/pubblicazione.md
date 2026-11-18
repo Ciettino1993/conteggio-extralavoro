@@ -3,17 +3,24 @@
 Per usarla dal telefono ovunque e installarla come app serve un indirizzo **HTTPS** pubblico.
 SpesaSmart è un sito statico (non serve un server): qualsiasi hosting statico va bene.
 
-## Opzione consigliata: GitHub Pages (gratis, prezzi carburante aggiornati ogni giorno)
+## Pubblicazione attiva: GitHub Pages
 
-Il file `.github/workflows/pubblica.yml` è già pronto: ogni mattina scarica i nuovi prezzi MIMIT,
-esegue i test, compila l'app e la pubblica.
+- App: <https://ciettino1993.github.io/spesasmart/>
+- Codice: <https://github.com/Ciettino1993/spesasmart> (ramo `main`)
+- Ogni modifica caricata su `main` ripubblica l'app in 2-3 minuti
+  (`.github/workflows/pubblica.yml`: test, prezzi carburanti, compilazione, pubblicazione).
 
-Cosa serve da parte tua (una volta sola, circa 10 minuti):
+### Prezzi carburanti: perché passano dal PC
 
-1. Crea un account gratuito su <https://github.com> (puoi usare l'accesso con Google).
-2. Dimmi il nome utente: preparo io il repository e la pubblicazione. Ti verrà chiesto solo di
-   autorizzare l'accesso dal browser (la password la inserisci tu, mai in chat).
-3. Indirizzo finale: `https://<nome-utente>.github.io/spesasmart/`
+Il sito MIMIT **non accetta connessioni dai server di GitHub** (sono all'estero: «Connect Timeout»),
+mentre dall'Italia funziona. Per questo:
+
+1. `Aggiorna prezzi carburanti.cmd` (o `npm run fuel:pubblica`) scarica dal PC i due CSV MIMIT e li
+   carica sul ramo `carburanti` del repository (un solo salvataggio, sostituito ogni volta).
+2. Il caricamento avvia la pubblicazione, che legge i CSV da quel ramo.
+3. I dati MIMIT del giorno escono verso le 8:45: conviene aggiornare dopo le 9.
+
+Se il PC non aggiorna, l'app resta online con gli ultimi prezzi caricati e mostra la data dei dati.
 
 ## Alternativa: il sito che hai già
 

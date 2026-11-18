@@ -18,8 +18,10 @@ Realizzata seguendo `SpesaSmart_Specifica_Tecnica.docx` (v1.0, 16/11/2026).
 > in `%LOCALAPPDATA%\SpesaSmart\app` e li esegue da lì. **I file "veri" restano in questa cartella**:
 > le modifiche vanno fatte qui, il programma di avvio le ricopia ogni volta.
 
-Per renderla disponibile su Internet (e installarla sul telefono come app vera) vedi
-[docs/pubblicazione.md](docs/pubblicazione.md).
+**App online:** <https://ciettino1993.github.io/spesasmart/> — dal telefono aprila in Chrome (Android) o
+Safari (iPhone) e scegli «Aggiungi a schermata Home» per installarla come app.
+I prezzi carburanti online si aggiornano con **`Aggiorna prezzi carburanti.cmd`** (dettagli in
+[docs/pubblicazione.md](docs/pubblicazione.md)).
 
 ## Cosa fa oggi
 
