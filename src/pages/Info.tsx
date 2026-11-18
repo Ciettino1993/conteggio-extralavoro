@@ -67,6 +67,11 @@ export default function Info() {
           quando premi «Usa la mia posizione». Ai servizi esterni vengono inviate solo le richieste necessarie (codice a barre,
           parola cercata, coordinate approssimate per i negozi vicini).
         </p>
+        <p>
+          <strong>Scontrini:</strong> la foto viene inviata ad Anthropic (Claude) con la tua chiave API solo per leggerne le righe e
+          non viene conservata nell'app. Gli scontrini possono contenere dati personali (es. numero tessera fedeltà): se
+          preferisci, coprili prima di scattare. La chiave API resta su questo dispositivo e non viene esportata.
+        </p>
       </section>
       <p className="text-center text-xs text-stone-400">SpesaSmart 0.1 · prototipo</p>
     </div>

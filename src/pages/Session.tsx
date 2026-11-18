@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, Flag, ListPlus, Minus, Plus, ScanBarcode, Search, Store as StoreIcon, Trash2 } from 'lucide-react'
+import { CheckCircle2, Flag, ListPlus, Minus, Plus, ReceiptText, ScanBarcode, Search, Store as StoreIcon, Trash2 } from 'lucide-react'
 import { db, type Product, type SessionItem, type ShoppingSession } from '../lib/db'
 import { useSettings } from '../lib/settings'
 import {
@@ -117,6 +117,13 @@ function StartSession() {
           </p>
         )}
       </section>
+      <Link to="/scontrino" className="card flex items-center gap-3">
+        <ReceiptText className="text-brand-700" />
+        <span className="flex-1">
+          <span className="block font-medium">Hai già fatto la spesa?</span>
+          <span className="muted">Fotografa lo scontrino: salva tutti i prezzi in un colpo.</span>
+        </span>
+      </Link>
       <PastSessions />
     </div>
   )
@@ -286,6 +293,10 @@ function ActiveSession({ session }: { session: ShoppingSession }) {
           </ul>
         </section>
       )}
+
+      <Link to="/scontrino" className="btn-ghost w-full text-sm">
+        <ReceiptText size={16} /> Alla cassa: leggi lo scontrino per salvare i prezzi pagati
+      </Link>
 
       {closing ? (
         <section className="card space-y-2">

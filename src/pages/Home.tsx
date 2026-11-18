@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronRight, Fuel as FuelIcon, ListChecks, MapPin, Scale, ScanBarcode, Store } from 'lucide-react'
+import { ChevronRight, Fuel as FuelIcon, ListChecks, MapPin, ReceiptText, Scale, ScanBarcode, Store } from 'lucide-react'
 import { db } from '../lib/db'
 import { useSettings } from '../lib/settings'
 import { useFuelData } from '../lib/hooks'
@@ -78,6 +78,9 @@ export default function Home() {
         </Link>
         <Link to="/confronta" className="btn-secondary h-14">
           <Scale size={20} /> Confronta
+        </Link>
+        <Link to="/scontrino" className="btn-secondary col-span-2 h-12">
+          <ReceiptText size={20} /> Leggi uno scontrino (salva tutti i prezzi in un colpo)
         </Link>
       </div>
 

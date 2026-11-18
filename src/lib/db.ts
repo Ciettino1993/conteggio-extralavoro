@@ -92,6 +92,13 @@ export interface SettingRow {
   value: unknown
 }
 
+/** Abbinamento confermato "testo scontrino in una catena" -> prodotto: la volta dopo è automatico. */
+export interface ReceiptAlias {
+  key: string
+  productCode: string
+  updatedAt: string
+}
+
 export const db = new Dexie('spesasmart') as Dexie & {
   products: EntityTable<Product, 'code'>
   lists: EntityTable<ShoppingList, 'id'>
@@ -102,6 +109,7 @@ export const db = new Dexie('spesasmart') as Dexie & {
   sessionItems: EntityTable<SessionItem, 'id'>
   fetchLog: EntityTable<FetchLog, 'key'>
   settings: EntityTable<SettingRow, 'key'>
+  receiptAliases: EntityTable<ReceiptAlias, 'key'>
 }
 
 db.version(1).stores({
@@ -115,6 +123,20 @@ db.version(1).stores({
   fetchLog: 'key',
   settings: 'key',
 })
+db.version(2).stores({ receiptAliases: 'key' })
+
+/** Riga delle impostazioni con la chiave API: mai esportata, mai inviata altrove che al servizio scelto. */
+export const API_KEY_ROW = 'anthropicApiKey'
+
+export async function getApiKey(): Promise<string | null> {
+  const v = (await db.settings.get(API_KEY_ROW))?.value
+  return typeof v === 'string' && v ? v : null
+}
+
+export async function setApiKey(key: string | null) {
+  if (key) await db.settings.put({ key: API_KEY_ROW, value: key.trim() })
+  else await db.settings.delete(API_KEY_ROW)
+}
 
 export const uid = () => crypto.randomUUID()
 export const nowIso = () => new Date().toISOString()
@@ -132,6 +154,7 @@ export async function markFetched(key: string) {
 export async function exportAll() {
   const out: Record<string, unknown[]> = {}
   for (const table of db.tables) out[table.name] = await table.toArray()
+  out.settings = (out.settings as SettingRow[]).filter((r) => r.key !== API_KEY_ROW)
   return { app: 'SpesaSmart', exportedAt: nowIso(), data: out }
 }
 

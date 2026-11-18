@@ -114,6 +114,8 @@ export async function reportPrice(input: {
   price: number
   isDiscounted?: boolean
   conditions?: string
+  observedAt?: string
+  proofType?: 'SCAFFALE' | 'SCONTRINO'
 }) {
   const obs: PriceObservation = {
     id: input.id ?? `user:${uid()}`,
@@ -121,12 +123,12 @@ export async function reportPrice(input: {
     storeId: input.storeId,
     price: Math.round(input.price * 100) / 100,
     currency: 'EUR',
-    observedAt: todayIso(),
+    observedAt: input.observedAt ?? todayIso(),
     status: 'segnalato',
     source: 'utente',
     isDiscounted: input.isDiscounted,
     conditions: input.conditions,
-    proofType: 'SCAFFALE',
+    proofType: input.proofType ?? 'SCAFFALE',
   }
   await db.prices.put(obs)
   return obs

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PackagePlus, ScanBarcode, Search, X } from 'lucide-react'
 import { lookupBarcode, searchLocalProducts, searchProducts } from '../lib/api/openfoodfacts'
 import type { Product } from '../lib/db'
@@ -14,13 +14,15 @@ interface Props {
   /** Se presente, consente di aggiungere una voce di testo libero (senza prodotto). */
   onFreeText?: (text: string) => void | Promise<void>
   startWithScanner?: boolean
+  /** Ricerca da avviare subito (es. il nome letto sullo scontrino). */
+  initialQuery?: string
 }
 
 /** Finestra per scegliere un prodotto: ricerca per nome/codice, scanner o nuovo prodotto. */
-export default function ProductPicker({ title, onPick, onClose, onFreeText, startWithScanner }: Props) {
+export default function ProductPicker({ title, onPick, onClose, onFreeText, startWithScanner, initialQuery }: Props) {
   const toast = useToast()
   const [mode, setMode] = useState<'search' | 'scan'>(startWithScanner ? 'scan' : 'search')
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery ?? '')
   const [results, setResults] = useState<Product[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [unknownCode, setUnknownCode] = useState<string | null>(null)
@@ -43,9 +45,18 @@ export default function ProductPicker({ title, onPick, onClose, onFreeText, star
     }
   }
 
+  useEffect(() => {
+    if (initialQuery?.trim()) void runSearch(initialQuery)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const search = async (e: React.FormEvent) => {
     e.preventDefault()
-    const q = query.trim()
+    await runSearch(query)
+  }
+
+  const runSearch = async (text: string) => {
+    const q = text.trim()
     if (!q) return
     if (/^\d{8,14}$/.test(q)) return byBarcode(q)
     setBusy(true)
@@ -53,7 +64,10 @@ export default function ProductPicker({ title, onPick, onClose, onFreeText, star
     try {
       const local = await searchLocalProducts(q)
       setResults(local)
-      const remote = await searchProducts(q)
+      let remote = await searchProducts(q)
+      // Nessun risultato con molte parole: riprova con le prime tre (es. "latte parzialmente scremato").
+      const words = q.split(/\s+/)
+      if (!remote.length && words.length > 3) remote = await searchProducts(words.slice(0, 3).join(' '))
       const seen = new Set(local.map((p) => p.code))
       setResults([...local, ...remote.filter((p) => !seen.has(p.code))])
     } catch (err) {

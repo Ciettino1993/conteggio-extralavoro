@@ -6,6 +6,7 @@ import { db, deleteAll, exportAll } from '../lib/db'
 import { updateSettings, useSettings, type Settings } from '../lib/settings'
 import { NumberField, PageHeader } from '../components/ui'
 import LocationPicker from '../components/LocationPicker'
+import ApiKeySetup from '../components/ApiKeySetup'
 import { useToast } from '../components/Toast'
 
 export default function Profile() {
@@ -148,6 +149,11 @@ export default function Profile() {
             </div>
           </details>
         )}
+      </section>
+
+      <section className="card space-y-3">
+        <h2 className="h2">Lettura scontrini</h2>
+        <ApiKeySetup />
       </section>
 
       <section className="card space-y-3">

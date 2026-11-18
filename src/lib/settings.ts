@@ -31,6 +31,8 @@ export const SettingsSchema = z.object({
   extraStopPenalty: z.number().min(0).max(20).default(0),
   maxPriceAgeDays: z.number().int().min(7).max(365).default(60),
   excludedBrands: z.array(z.string()).default([]),
+  /** Modello usato per leggere gli scontrini. */
+  receiptModel: z.enum(['claude-opus-5-5', 'claude-haiku-5-5']).default('claude-opus-5-5'),
 })
 
 export type Settings = z.infer<typeof SettingsSchema>

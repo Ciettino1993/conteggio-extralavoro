@@ -12,6 +12,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const Fuel = lazy(() => import('./pages/Fuel'))
 const Stores = lazy(() => import('./pages/Stores'))
 const Info = lazy(() => import('./pages/Info'))
+const Receipt = lazy(() => import('./pages/Receipt'))
 
 const NAV = [
   { to: '/', label: 'Home', icon: HomeIcon, end: true },
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/carburante" element={<Fuel />} />
           <Route path="/negozi" element={<Stores />} />
           <Route path="/info" element={<Info />} />
+          <Route path="/scontrino" element={<Receipt />} />
           <Route path="*" element={<Home />} />
         </Routes>
         </Suspense>
