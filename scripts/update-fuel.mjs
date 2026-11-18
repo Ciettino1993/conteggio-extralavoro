@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Scarica gli open data MIMIT sui prezzi dei carburanti e genera i file in public/data/carburanti/.
-// Uso: node scripts/update-fuel.mjs            -> aggiorna sempre (errore se il download fallisce)
-//      node scripts/update-fuel.mjs --if-stale -> aggiorna solo se i dati hanno più di 12 ore
+// Uso: node scripts/update-fuel.mjs                  -> aggiorna sempre (errore se il download fallisce)
+//      node scripts/update-fuel.mjs --if-stale       -> aggiorna solo se i dati hanno più di 12 ore
+//      node scripts/update-fuel.mjs --from-dir <dir> -> usa i CSV già scaricati in <dir>
+//        (il sito MIMIT non risponde ai server esteri come GitHub: i CSV li carica il PC, vedi
+//         scripts/pubblica-carburanti.mjs)
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -12,6 +15,8 @@ const OUT = path.join(ROOT, 'public', 'data', 'carburanti')
 const BASE = 'https://www.mimit.gov.it/images/exportCSV/'
 const STALE_MS = 12 * 3600 * 1000
 const ifStale = process.argv.includes('--if-stale')
+const fromDirIdx = process.argv.indexOf('--from-dir')
+const fromDir = fromDirIdx > 0 ? process.argv[fromDirIdx + 1] : null
 
 async function readMeta() {
   try {
@@ -47,11 +52,15 @@ async function main() {
     console.log(`[carburanti] dati aggiornati (estrazione del ${meta.extraction}), nessun download.`)
     return
   }
-  console.log('[carburanti] download open data MIMIT...')
-  const [stationsCsv, pricesCsv] = await Promise.all([
-    download('anagrafica_impianti_attivi.csv'),
-    download('prezzo_alle_8.csv'),
-  ])
+  const files = ['anagrafica_impianti_attivi.csv', 'prezzo_alle_8.csv']
+  let stationsCsv, pricesCsv
+  if (fromDir) {
+    console.log(`[carburanti] lettura CSV da ${fromDir}...`)
+    ;[stationsCsv, pricesCsv] = await Promise.all(files.map((f) => readFile(path.join(fromDir, f), 'utf8')))
+  } else {
+    console.log('[carburanti] download open data MIMIT...')
+    ;[stationsCsv, pricesCsv] = await Promise.all(files.map((f) => download(f)))
+  }
   const { extraction, tiles, count } = buildTiles(stationsCsv, pricesCsv)
   if (count < 1000) throw new Error(`solo ${count} impianti letti: il formato dei file potrebbe essere cambiato`)
 

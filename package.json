@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "description": "SpesaSmart - PWA per liste della spesa, confronto prezzi e costi di spostamento",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ciettino1993/spesasmart.git"
+  },
   "scripts": {
     "fuel:update": "node scripts/update-fuel.mjs",
     "predev": "node scripts/update-fuel.mjs --if-stale",
@@ -13,7 +17,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "fuel:pubblica": "node scripts/pubblica-carburanti.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.108.0",

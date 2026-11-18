@@ -1,12 +1,13 @@
-# Pubblica SpesaSmart su GitHub Pages e aggiorna ogni giorno i prezzi dei carburanti (open data MIMIT).
-# Attivazione: vedi docs/pubblicazione.md (serve un account GitHub gratuito).
+# Pubblica SpesaSmart su GitHub Pages.
+# I prezzi carburanti (open data MIMIT) arrivano dal ramo "carburanti", caricato ogni mattina dal PC
+# con scripts/pubblica-carburanti.mjs: il sito MIMIT non risponde ai server di GitHub (esteri).
 name: Pubblica
 
 on:
   push:
-    branches: [main]
+    branches: [main, carburanti]
   schedule:
-    - cron: '30 7 * * *' # ogni giorno dopo la pubblicazione dei dati MIMIT (ore 8 italiane)
+    - cron: '0 9 * * *' # tentativo giornaliero di riserva
   workflow_dispatch:
 
 permissions:
@@ -23,18 +24,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main # anche quando la pubblicazione parte dal ramo dei dati
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Aggiorna prezzi carburanti
-        run: npm run fuel:update
-        continue-on-error: true # l'app viene pubblicata comunque (senza dati carburante se il download fallisce)
-      - name: Diagnosi accesso MIMIT
-        if: always()
-        run: curl -sS -m 30 -o /dev/null -w "HTTP %{http_code} in %{time_total}s da IP $(curl -s -m 10 https://api.ipify.org)\n" https://www.mimit.gov.it/images/exportCSV/prezzo_alle_8.csv || true
+      - name: Prezzi carburanti
+        continue-on-error: true # senza dati l'app si pubblica comunque e mostra «non disponibile»
+        run: |
+          # 1) download diretto (di solito bloccato da GitHub), 2) CSV caricati dal PC sul ramo "carburanti"
+          if timeout 60 npm run fuel:update; then exit 0; fi
+          mkdir -p /tmp/carburanti
+          git fetch --depth=1 origin carburanti
+          git --work-tree=/tmp/carburanti checkout FETCH_HEAD -- anagrafica_impianti_attivi.csv prezzo_alle_8.csv
+          git reset -q
+          node scripts/update-fuel.mjs --from-dir /tmp/carburanti
       - name: Compila
         run: npm run build
         env:
