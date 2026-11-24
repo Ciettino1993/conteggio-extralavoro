@@ -4,7 +4,7 @@
 // Serve perché il sito MIMIT non risponde ai server di GitHub (esteri).
 // Il ramo contiene un solo salvataggio, sostituito ogni giorno: il repository non cresce.
 import { execFileSync } from 'node:child_process'
-import { appendFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { appendFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
@@ -12,7 +12,9 @@ import os from 'node:os'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const BASE = 'https://www.mimit.gov.it/images/exportCSV/'
 const FILES = ['anagrafica_impianti_attivi.csv', 'prezzo_alle_8.csv']
-const WORK = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'SpesaSmart', 'carburanti-upload')
+const APP_DIR = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'SpesaSmart')
+// Cartella nuova a ogni esecuzione: Windows a volte non riesce a cancellare subito quella precedente.
+const WORK = path.join(APP_DIR, `carburanti-upload-${Date.now()}`)
 const IDENTITY = { name: 'Ciettino1993', email: '170741288+Ciettino1993@users.noreply.github.com' }
 
 const LOG = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), 'SpesaSmart', 'carburanti.log')
@@ -31,13 +33,16 @@ async function main() {
   const repo = pkg.repository?.url ?? pkg.repository
   if (!repo) throw new Error('package.json senza "repository"')
 
-  await rm(WORK, { recursive: true, force: true })
+  // Pulizia delle cartelle delle esecuzioni precedenti (gli errori non bloccano).
+  for (const d of await readdir(APP_DIR).catch(() => [])) {
+    if (d.startsWith('carburanti-upload')) await rm(path.join(APP_DIR, d), { recursive: true, force: true }).catch(() => {})
+  }
   await mkdir(WORK, { recursive: true })
 
   let extraction = null
   for (const f of FILES) {
     const res = await fetch(BASE + f, {
-      headers: { 'User-Agent': 'SpesaSmart/0.1 (aggiornamento open data carburanti)' },
+      headers: { 'User-Agent': 'ConteggioExtralavoro/1.0 (aggiornamento open data carburanti)' },
       signal: AbortSignal.timeout(180_000),
     })
     if (!res.ok) throw new Error(`${f}: HTTP ${res.status}`)
