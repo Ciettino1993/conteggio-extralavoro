@@ -8,4 +8,4 @@ dev-dist
 # Dati carburanti: rigenerati ogni giorno da scripts/update-fuel.mjs
 public/data/carburanti/
 .claude/
-public/data/negozi/
+

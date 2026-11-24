@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ChevronLeft } from 'lucide-react'
-import type { PriceSource, PriceStatus } from '../lib/compare'
 
 export function PageHeader({ title, back, action }: { title: string; back?: string; action?: ReactNode }) {
   return (
@@ -14,28 +13,6 @@ export function PageHeader({ title, back, action }: { title: string; back?: stri
       <h1 className="h1 flex-1 truncate">{title}</h1>
       {action}
     </header>
-  )
-}
-
-const STATUS_STYLE: Record<PriceStatus | 'scaduto', string> = {
-  verificato: 'bg-brand-100 text-brand-800',
-  segnalato: 'bg-amber-100 text-amber-800',
-  scaduto: 'bg-stone-200 text-stone-600',
-  rifiutato: 'bg-red-100 text-red-700',
-}
-
-const SOURCE_LABEL: Record<PriceSource, string> = {
-  openprices: 'Open Prices',
-  utente: 'tuo rilievo',
-  ufficiale: 'fonte ufficiale',
-}
-
-export function PriceStatusChip({ status, source }: { status: PriceStatus | 'scaduto'; source?: PriceSource }) {
-  return (
-    <span className={`chip ${STATUS_STYLE[status]}`}>
-      {status}
-      {source && ` · ${SOURCE_LABEL[source]}`}
-    </span>
   )
 }
 

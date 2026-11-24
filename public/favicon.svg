@@ -1,7 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="112" fill="#15803d"/>
-  <path d="M120 150h44l38 176h178l34-130H190" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="222" cy="384" r="26" fill="#fff"/>
-  <circle cx="356" cy="384" r="26" fill="#fff"/>
-  <path d="M262 236l30 30 54-60" fill="none" stroke="#fde047" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- auto -->
+  <path d="M96 300l34-86c6-15 20-24 36-24h140c16 0 30 9 36 24l34 86" fill="none" stroke="#fff" stroke-width="28" stroke-linejoin="round"/>
+  <rect x="78" y="290" width="300" height="92" rx="28" fill="#fff"/>
+  <circle cx="142" cy="384" r="30" fill="#15803d" stroke="#fff" stroke-width="16"/>
+  <circle cx="314" cy="384" r="30" fill="#15803d" stroke="#fff" stroke-width="16"/>
+  <!-- orologio -->
+  <circle cx="372" cy="160" r="82" fill="#fde047" stroke="#15803d" stroke-width="14"/>
+  <path d="M372 112v52l34 22" fill="none" stroke="#15803d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
