@@ -1,0 +1,61 @@
+# Pubblica Conteggio Extralavoro su GitHub Pages.
+# I prezzi carburanti (open data MIMIT) arrivano dal ramo "carburanti", caricato ogni mattina dal PC
+# con scripts/pubblica-carburanti.mjs: il sito MIMIT non risponde ai server di GitHub (esteri).
+name: Pubblica
+
+on:
+  push:
+    branches: [main, carburanti]
+  schedule:
+    - cron: '0 9 * * *' # tentativo giornaliero di riserva
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main # anche quando la pubblicazione parte dal ramo dei dati
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Prezzi carburanti
+        continue-on-error: true # senza dati l'app si pubblica comunque e mostra «non disponibile»
+        run: |
+          # 1) download diretto (di solito bloccato da GitHub), 2) CSV caricati dal PC sul ramo "carburanti"
+          if timeout 60 npm run fuel:update; then exit 0; fi
+          mkdir -p /tmp/carburanti
+          git fetch --depth=1 origin carburanti
+          git --work-tree=/tmp/carburanti checkout FETCH_HEAD -- anagrafica_impianti_attivi.csv prezzo_alle_8.csv
+          git reset -q
+          node scripts/update-fuel.mjs --from-dir /tmp/carburanti
+      - name: Compila
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
